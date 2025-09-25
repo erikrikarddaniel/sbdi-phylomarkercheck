@@ -45,11 +45,12 @@ process FILTERGAPPY {
         # Keep the longest sequence, i.e. fewest gaps, from each genome -- 5 for species representative genomes
         group_by(genome) %>%
         mutate(
+            # Set the number of genes selected per genome depending on genome characteristics
             ngenes = case_when(
-                ncbi_genome_category == 'derived from metagenome'  ~ 1,
-                ncbi_genome_category == 'derived from single cell' ~ 1,
-                gtdb_representative == 't'                         ~ 5,
-                TRUE                                               ~ 1
+                ncbi_genome_category == 'derived from metagenome'  ~ 1, # Low priority to MAGs
+                ncbi_genome_category == 'derived from single cell' ~ 2, # Quite low priority to SAGs
+                gtdb_representative == 't'                         ~ 5, # High priority to isolate representatives
+                TRUE                                               ~ 3  # Intermediate priority to non-representative isolates  
             )
         ) %>%
         arrange(str_remove_all(sequence, '-') %>% str_length() %>% desc()) %>%
